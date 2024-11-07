@@ -15,7 +15,7 @@ init(autoreset=True)
 
 triage_url = "https://tria.ge/s?q=score:10 AND tag:pyinstaller or family:blankgrabber or family:discordrat&limit=1"
 processed_ids = set()
-triage_api_key = "YOUR_API_KEY"
+triage_api_key = "YOUR_API_KEY_HERE"
 
 now = datetime.now()
 current_time = now.strftime("%H:%M:%S")
@@ -49,8 +49,11 @@ async def process_submission(report_id, file_name, fams, score, time_uploaded, t
                 decomp = requests.get(result)
                 if decomp.status_code == 200:
                     success("Webhook valid!")
+                    time.sleep(5)
+                    os.system("cls")
                 else:
                     error("404")
+                    time.sleep(5)
                     os.system("cls")
             elif contains_base64(result):
                 success("Successfully decompiled Base64 string: " + result)

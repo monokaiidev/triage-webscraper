@@ -33,8 +33,3 @@ A webscraper made to get the website https://tria.ge and malware submissions! If
     ```bash
     python webscraper.py
     ```
-
-1. **Run the Scraper**:
-    ```bash
-    npm start
-    ```
