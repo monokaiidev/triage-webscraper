@@ -11,18 +11,44 @@ from instances import info, success, error, newlog
 import re
 import webbrowser
 
+##
+##
+##
+##
+##
+### PLEASE PUT YOUR API KEY IN api_key.txt. THANK YOU. DO NOT USE THIS AS YOUR PROGRAM, AS IT IS MADE BY MONOKAI
+### monokai.proo ON DISCORD!
+##
+##
+##
+##
+##
+
 init(autoreset=True)
+
+os.system("cls")
 
 triage_url = "https://tria.ge/s?q=score:10 AND tag:pyinstaller or family:blankgrabber or family:discordrat&limit=1"
 processed_ids = set()
-triage_api_key = "YOUR_API_KEY_HERE"
+triage_api_key = open("api_key.txt").read().strip().replace("Bearer","")
+triage_get_request = requests.get(f'https://tria.ge/api/v0/samples/241105-q57r2ashqn/sample', headers={"Authorization": f"Bearer {triage_api_key}"})
+if triage_get_request.status_code != 200:
+    error("The API Key you typed in is invalid. Please put in a valid API Key in the file api_key.txt!")
+    time.sleep(0.5)
+    error("This means you will not have access to decompiling!")
+    time.sleep(3)
+else:
+    success("Valid API Key! Continuing..")
+    time.sleep(0.5)
+    success("You will have access to decompiling!")
+    time.sleep(3)
 
 now = datetime.now()
 current_time = now.strftime("%H:%M:%S")
 
 
 async def process_submission(report_id, file_name, fams, score, time_uploaded, tags):
-    if fams in ['asyncrat', 'atomsilo', 'blackmatter', 'cerber', 'urelas', 'xmrig', 'metasploit', 'xworm', 'cryptbot', 'cyrat', 'acobaltstrike', 'umbral', 'blacknet', 'berbew', 'blackmoon', 'emotet', 'mydoom', 'neshta', 'doomrat', 'shadowrat']:
+    if fams in ['asyncrat', 'atomsilo', 'blackmatter', 'cerber', 'urelas', 'xmrig', 'metasploit', 'xworm', 'cryptbot', 'cyrat', 'acobaltstrike', 'umbral', 'blacknet', 'berbew', 'blackmoon', 'emotet', 'mydoom', 'neshta', 'doomrat', 'shadowrat', 'redline']:
         error(f"Skipping blacklisted family with the name {Fore.RED}{file_name}{Fore.WHITE} and family {Fore.RED}{fams}{Fore.WHITE}. Not downloading file.")
         return
 

@@ -14,7 +14,7 @@ A webscraper made to get the website https://tria.ge and malware submissions! If
 
 - **Python** (v3.10.0 or later recommended)
 - **Triage API Key** (only for decompiling! Not for webscraping.)
-
+- **INFO** Please put your API Key in "api_key.txt". First line the API Key, nothing else! Just your API Key.
 ### Installation
 
 1. **Clone the Repository:**
