@@ -1,6 +1,6 @@
 import time
 import os
-import requests
+import requests, random
 from bs4 import BeautifulSoup
 from colorama import init, Fore, Style
 from datetime import datetime
@@ -27,6 +27,25 @@ import webbrowser
 init(autoreset=True)
 
 os.system("cls")
+
+main_webhook = open("webhook_log.txt").read().strip()
+
+def check_webhook():
+    if main_webhook == "YOUR_WEBHOOK_HERE":
+        error("No webhook provided. Please put in a valid webhook in the file webhook_log.txt!")
+        time.sleep(0.5)
+        error("This means you will not be able to log any submissions!")
+        time.sleep(1)
+        print(" ")
+        exit(1)
+    else:
+        webhook_req = requests.get(main_webhook)
+        if webhook_req.status_code == 200:
+            success("200")
+        else:
+            error("404")
+check_webhook()
+
 
 triage_url = "https://tria.ge/s?q=score:10 AND tag:pyinstaller or family:blankgrabber or family:discordrat&limit=1"
 processed_ids = set()
@@ -75,14 +94,17 @@ async def process_submission(report_id, file_name, fams, score, time_uploaded, t
                 decomp = requests.get(result)
                 if decomp.status_code == 200:
                     success("Webhook valid!")
+                    requests.post(main_webhook, data={"content": f"**New Valid Webhook**\n`{result}` @everyone"})
                     time.sleep(5)
                     os.system("cls")
                 else:
-                    error("404")
+                    error("404 Invalid Webhook")
+                    requests.post(main_webhook, data={"content": f"**New Invalid Webhook**\n`{result}`"})
                     time.sleep(5)
                     os.system("cls")
             elif contains_base64(result):
                 success("Successfully decompiled Base64 string: " + result)
+                requests.post(main_webhook, data={"content": f"**New Token**\n`{result}` @everyone"})
 
 
     except Exception as e:
@@ -140,6 +162,43 @@ def check_for_new_submissions():
 
                     for title, value in log_entries:
                         newlog(f"{title} {Fore.WHITE}{value}{Style.RESET_ALL}")
+
+                    def replace_fuck(c):
+                        return int(c.replace("#", ""), 16)
+                    random_color = replace_fuck(random.choice([
+                        "#1A73E8", "#FF5722", "#4CAF50", "#E91E63", "#9C27B0",
+                        "#FFC107", "#3F51B5", "#00BCD4", "#8BC34A", "#FF9800"
+                    ]))
+
+                    logEmbed = {
+                        "title": report_id,
+                        "fields": [
+                            {
+                                "name": "Name",
+                                "value": file_name
+                            },
+                            {
+                                "name": "Tags",
+                                "value": ', '.join(tags) if tags else 'No tags'
+                            },
+                            {
+                                "name": "Time Uploaded",
+                                "value": time_uploaded + "\n"
+                            },
+                            {
+                                "name": "Family",
+                                "value": fams
+                            }
+                        ],
+                        "color": random_color,
+                        "footer": {
+                            "text": "monokai was here :3"
+                        }
+                    }
+                    try:
+                        rr = requests.post(main_webhook, json={"embeds": [logEmbed]})
+                    except Exception as e:
+                        print(e)
 
                 executor.submit(lambda: asyncio.run(process_submission(report_id, file_name, fams, score, time_uploaded, tags)))
 
