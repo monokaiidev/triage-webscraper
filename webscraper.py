@@ -19,7 +19,7 @@ import webbrowser
 ### PLEASE PUT YOUR API KEY IN api_key.txt. THANK YOU. DO NOT USE THIS AS YOUR PROGRAM, AS IT IS MADE BY MONOKAI
 ### monokai.proo ON DISCORD!
 ##
-##
+## PLEASE PUT YOUR DISCORD WEBHOOK IN webhook_log.txt OTHERWISE IT WILL NOT WORK
 ##
 ##
 ##
@@ -41,13 +41,13 @@ def check_webhook():
     else:
         webhook_req = requests.get(main_webhook)
         if webhook_req.status_code == 200:
-            success("200")
+            success("Webhook valid!")
         else:
-            error("404")
+            error("Webhook invalid! Please put a valid webhook in webhook_log.txt")
 check_webhook()
 
 
-triage_url = "https://tria.ge/s?q=score:10 AND tag:pyinstaller or family:blankgrabber or family:discordrat&limit=1"
+triage_url = "https://tria.ge/s?q=score:10 AND tag:pyinstaller or family:blankgrabber or family:discordrat or family:pysilon&limit=1"
 processed_ids = set()
 triage_api_key = open("api_key.txt").read().strip().replace("Bearer","")
 triage_get_request = requests.get(f'https://tria.ge/api/v0/samples/241105-q57r2ashqn/sample', headers={"Authorization": f"Bearer {triage_api_key}"})
@@ -206,6 +206,7 @@ def check_for_new_submissions():
 
                 if 'discordrat' in tags:
                     success(f"Found DiscordRAT in submission https://tria.ge/{report_id}")
+                    requests.post(main_webhook, data={"content": f"**DiscordRAT**\nDiscordRAT Found in Submission {report_id}!\n@everyone"})
 
 def main():
     while True:
