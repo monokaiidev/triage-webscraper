@@ -1,5 +1,6 @@
 # Triage Webscraper
-
+![](https://img.shields.io/badge/3.10.0%20and%20higher%20recommended!-ffa6ed?style=for-the-badge&color=ffa6ed&labelColor=ff6ee9&label=Python)
+<br></br>
 A webscraper made to get the website https://tria.ge and malware submissions! If a submission is over a 6 and it is part of a malware family, then it will automatically decompile it.
 
 ## Features
