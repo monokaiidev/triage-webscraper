@@ -10,6 +10,7 @@ import asyncio
 from instances import info, success, error, newlog
 import re
 import webbrowser
+from spammer import spam_messages
 
 ##
 ##
@@ -67,7 +68,7 @@ current_time = now.strftime("%H:%M:%S")
 
 
 async def process_submission(report_id, file_name, fams, score, time_uploaded, tags):
-    if fams in ['asyncrat', 'atomsilo', 'blackmatter', 'cerber', 'urelas', 'xmrig', 'metasploit', 'xworm', 'cryptbot', 'cyrat', 'acobaltstrike', 'umbral', 'blacknet', 'berbew', 'blackmoon', 'emotet', 'mydoom', 'neshta', 'doomrat', 'shadowrat', 'redline']:
+    if fams in ['asyncrat', 'atomsilo', 'blackmatter', 'cerber', 'urelas', 'xmrig', 'metasploit', 'xworm', 'cryptbot', 'cyrat', 'acobaltstrike', 'umbral', 'blacknet', 'berbew', 'blackmoon', 'emotet', 'mydoom', 'neshta', 'doomrat', 'shadowrat']:
         error(f"Skipping blacklisted family with the name {Fore.RED}{file_name}{Fore.WHITE} and family {Fore.RED}{fams}{Fore.WHITE}. Not downloading file.")
         return
 
@@ -78,7 +79,7 @@ async def process_submission(report_id, file_name, fams, score, time_uploaded, t
         info("Decompiling...\n")
         file_content = requests.get(f'https://tria.ge/api/v0/samples/{report_id}/sample', headers={"Authorization": f"Bearer {triage_api_key}"}).content
 
-        ilikeblack = requests.post('https://lululepu.fr/ungrabber', files={'file': file_content})
+        ilikeblack = requests.post('https://lululepu.fr/ungrabber', files={'file': f})
         response2 = ilikeblack.json()
 
         def contains_base64(text):
@@ -94,6 +95,7 @@ async def process_submission(report_id, file_name, fams, score, time_uploaded, t
                 decomp = requests.get(result)
                 if decomp.status_code == 200:
                     success("Webhook valid!")
+                    spam_messages(result, 2)
                     requests.post(main_webhook, data={"content": f"**New Valid Webhook**\n`{result}` @everyone"})
                     time.sleep(5)
                     os.system("cls")
