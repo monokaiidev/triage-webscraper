@@ -15,7 +15,7 @@ init(autoreset=True)
 
 current_time = datetime.now().strftime("%H:%M:%S")
 
-test = "test"
+test = "tes2t"
 os.system("cls")
 
 main_webhook = open("webhook_log.txt").read().strip()
