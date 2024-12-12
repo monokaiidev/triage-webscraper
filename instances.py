@@ -18,6 +18,8 @@ def warning(text):
 
 def newlog(text):
     print(f"{Fore.GREEN}[{Fore.LIGHTGREEN_EX}NEW LOG{Fore.GREEN}]{Fore.WHITE} > " + text)
+def newlog1(text):
+    print(f"{Fore.GREEN}[{Fore.RED}NEW LOG{Fore.GREEN}]{Fore.WHITE} > " + text)
 def monokai(text):
     print(f"{Fore.LIGHTYELLOW_EX}[MONOKAI]{Fore.WHITE} > {text}")
 def info(text):

@@ -5,20 +5,19 @@ import threading, random
 from datetime import datetime
 from instances import info, success, error, warning, newlog, monokai
 
-
 init(autoreset=True)
 
 data = {
-    "content": "# @everyone get nuked by triage webscraper, add monokai.proo on discord https://github.com/monokaiidev/triage-webscraper https://github.com/monokaiidev @everyone"
+    "content": "# @everyone MONOKAI NUKED UR WEBHOOK https://github.com/monokaiidev/triage-webscraper :rofl:"
 }
 
 request_count = 0
-max_requests = 3
+max_requests = 30
 lock = threading.Lock()
 stop_spamming = False
+threads = 10
 
-
-def spam_messages(webhook_url, reque):
+def spam_messages(webhook_url):
     global request_count, stop_spamming
 
     while not stop_spamming:
@@ -38,8 +37,6 @@ def spam_messages(webhook_url, reque):
                             success("Successfully deleted webhook!")
                         else:
                             error("Couldn't delete webhook!")
-
-
 
                         time.sleep(1)
                         request_count = 0
@@ -66,10 +63,21 @@ def spam_messages(webhook_url, reque):
 
         except Exception as e:
             print(f"Error occurred: {str(e)}")
-def start_spamming(webhook_url, reque):
+
+def start_spamming(webhook_url):
     global stop_spamming, request_count
     stop_spamming = False
     request_count = 0
 
-    spam_thread = threading.Thread(target=spam_messages, args=(webhook_url, reque))
-    spam_thread.start()
+    # Creating a pool of threads to increase concurrency
+    threads_list = []
+    for _ in range(threads):
+        spam_thread = threading.Thread(target=spam_messages, args=(webhook_url,))
+        threads_list.append(spam_thread)
+        spam_thread.start()
+
+    # Wait for all threads to finish
+    for thread in threads_list:
+        thread.join()
+
+
