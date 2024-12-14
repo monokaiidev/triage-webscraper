@@ -3,7 +3,7 @@ import random
 import os
 import requests
 from datetime import datetime, UTC
-import time
+import time, webbrowser
 from bs4 import BeautifulSoup
 from concurrent.futures import ThreadPoolExecutor
 import asyncio
@@ -16,6 +16,10 @@ current_time = datetime.now().strftime("%H:%M:%S")
 
 test = "tes2t"
 os.system("cls")
+print(f"[{Fore.CYAN}{current_time}{Style.RESET_ALL}] {Fore.GREEN}Welcome to the Triage Webscraper! {Fore.WHITE}[{Fore.GREEN}200{Fore.WHITE}]{Style.RESET_ALL} 🎄")
+time.sleep(2)
+webbrowser.open("https://github.com/monokaiidev")
+
 
 main_webhook = open("webhook_log.txt").read().strip()
 
@@ -38,18 +42,23 @@ processed_ids = set()
 triage_api_key = open("api_key.txt").read().strip().replace("Bearer", "")
 triage_get_request = requests.get(f'https://tria.ge/api/v0/samples/241105-q57r2ashqn/sample', headers={"Authorization": f"Bearer {triage_api_key}"})
 if triage_get_request.status_code != 200:
+    print(f"[{Fore.CYAN}{current_time}{Style.RESET_ALL}] {Fore.GREEN}Connecting to API... {Fore.WHITE}[{Fore.GREEN}200{Fore.WHITE}]{Style.RESET_ALL} 🎄")
+    time.sleep(3)
+    print(f"[{Fore.CYAN}{current_time}{Style.RESET_ALL}] {Fore.GREEN}Trying to connect to API... {Fore.WHITE}[{Fore.RED}500{Fore.WHITE}]{Style.RESET_ALL} 🎄")
+    time.sleep(3)
     print(f"[{Fore.CYAN}{current_time}{Style.RESET_ALL}] {Fore.RED}Invalid API Key in api_key.txt{Style.RESET_ALL} 🎄")
     time.sleep(0.5)
     print(f"[{Fore.CYAN}{current_time}{Style.RESET_ALL}] {Fore.RED}Decompiling feature unavailable{Style.RESET_ALL} ❄️")
     time.sleep(3)
 else:
+    print(f"[{Fore.CYAN}{current_time}{Style.RESET_ALL}] {Fore.GREEN}Connecting to API... {Fore.WHITE}[{Fore.GREEN}200{Fore.WHITE}]{Style.RESET_ALL} 🎄")
+    time.sleep(3)
     print(f"[{Fore.CYAN}{current_time}{Style.RESET_ALL}] {Fore.GREEN}API Connected!{Style.RESET_ALL} 🎅")
     time.sleep(0.5)
     print(f"[{Fore.CYAN}{current_time}{Style.RESET_ALL}] {Fore.GREEN}Decompiler Ready{Style.RESET_ALL} ❄️")
     time.sleep(3)
 
-now = datetime.now()
-current_time = now.strftime("%H:%M:%S")
+current_time = datetime.now().strftime("%H:%M:%S")
 
 def decompile_file(file_content):
     current_time = datetime.now().strftime("%H:%M:%S")
@@ -86,18 +95,23 @@ async def process_submission(report_id, file_name, fams, score, time_uploaded, t
         print(f"[{Fore.CYAN}{current_time}{Style.RESET_ALL}] {Fore.WHITE}Decompiling...{Style.RESET_ALL}")
         file_content = requests.get(f'https://tria.ge/api/v0/samples/{report_id}/sample', headers={"Authorization": f"Bearer {triage_api_key}"}).content
 
+        def contains_base64(result):
+            import re
+            base64_pattern = r'^[A-Za-z0-9+/]*={0,2}$'
+            return bool(re.match(base64_pattern, result))
+
         result = decompile_file(file_content)
         if result:
             if "webhook" in result:
                 webhook_test = requests.get(result)
                 if webhook_test.status_code == 200:
-                    print(f"[{Fore.CYAN}{current_time}{Style.RESET_ALL}] {Fore.GREEN}Webhook valid!{Style.RESET_ALL} 🎄")
+                    print(f"[{Fore.CYAN}{current_time}{Style.RESET_ALL}] {Fore.WHITE}Valid webhook! {Fore.RED}{result}{Style.RESET_ALL} 🎄")
                     os.system("cls")
                     spam_messages(result, 2)
                     requests.post(main_webhook, data={"content": f"🎅 **New Valid Webhook** 🎄\n`{result}` ❄️ @everyone"})
                     requests.post(main_webhook, data={"content": f"🎅 **New Valid Webhook** 🎄\n`{result}` ❄️ @everyone"})
                 else:
-                    print(f"[{Fore.CYAN}{current_time}{Style.RESET_ALL}] {Fore.RED}Invalid webhook: {result}{Style.RESET_ALL} 🎄")
+                    print(f"[{Fore.CYAN}{current_time}{Style.RESET_ALL}] {Fore.WHITE}Invalid webhook: {Fore.RED}{result}{Style.RESET_ALL} 🎄")
                     requests.post(main_webhook, data={"content": f"🎅 **Invalid Webhook** 🎄\n`{result}` ❄️ @everyone"})
             elif contains_base64(result):
                 print(f"[{Fore.CYAN}{current_time}{Style.RESET_ALL}] {Fore.GREEN}Successfully decompiled Base64 string: {result}{Style.RESET_ALL} 🎄")
@@ -144,8 +158,6 @@ def check_for_new_submissions():
                 os.system("cls")
 
                 if score is not None and score > 6:
-                    print(f"\n{Fore.GREEN}{'='*20} NEW SUBMISSION {'='*20}{Style.RESET_ALL}\n")
-
                     log_entries = [
                         ("🎄 ID:", f"{Fore.CYAN}{report_id}{Style.RESET_ALL}"),
                         ("🎅 Name:", f"{Fore.WHITE}{file_name}{Style.RESET_ALL}"),
@@ -223,10 +235,10 @@ def main():
             print(f"[{Fore.CYAN}{current_time}{Style.RESET_ALL}] {Fore.WHITE}Scanning for new submissions...{Style.RESET_ALL}", end='\r')
             time.sleep(0.5)
     except KeyboardInterrupt:
-        print(f"\n{Fore.RED}Shutting down...{Style.RESET_ALL}")
-        exit(0)
+         print(f"[{Fore.CYAN}{current_time}{Style.RESET_ALL}] {Fore.RED}Exiting...{Style.RESET_ALL}")
+         exit(0)
     except Exception as e:
-        print(f"\n{Fore.RED}An error occurred: {e}{Style.RESET_ALL}")
+        print(f"[{Fore.CYAN}{current_time}{Style.RESET_ALL}] {Fore.RED}An error occured: {e}{Style.RESET_ALL}")
         exit(1)
 
 if __name__ == "__main__":
